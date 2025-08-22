@@ -41,6 +41,7 @@ const Leaderboard = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .gte('total_battles', 5) // Minimum 5 battles to appear on leaderboard
         .order('total_score', { ascending: false })
         .order('battles_won', { ascending: false })
         .limit(50);

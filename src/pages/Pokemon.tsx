@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
 
 interface Pokemon {
@@ -57,12 +58,22 @@ const Pokemon = () => {
     }
   };
 
-  const toggleFavorite = (pokemonId: number) => {
-    setFavorites(prev => 
-      prev.includes(pokemonId) 
-        ? prev.filter(id => id !== pokemonId)
-        : [...prev, pokemonId]
-    );
+  const toggleFavorite = async (pokemonId: number) => {
+    // Check if user can add more favorites (limit: 10)
+    if (favorites.includes(pokemonId)) {
+      setFavorites(prev => prev.filter(id => id !== pokemonId));
+      // Remove from database logic here
+    } else {
+      if (favorites.length >= 10) {
+        toast.error("You can only have up to 10 favorite Pokémon!");
+        return;
+      }
+      setFavorites(prev => [...prev, pokemonId]);
+      // Add to database logic here
+      if (favorites.length === 9) {
+        toast.info("You're approaching the favorites limit (10 Pokémon)!");
+      }
+    }
   };
 
   const getTypeColor = (type: string) => {
