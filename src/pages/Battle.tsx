@@ -332,10 +332,10 @@ const Battle = () => {
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-sm text-muted-foreground mb-3">Fight against AI opponent</p>
-              <Button 
+               <Button 
                 className="w-full" 
-                onClick={() => {/* Current battle logic */}}
-                disabled={!!battleState.playerPokemon}
+                onClick={startBattle}
+                disabled={!!battleState.playerPokemon || loading}
               >
                 Start Bot Battle
               </Button>
