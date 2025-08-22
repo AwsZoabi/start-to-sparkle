@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Heart, ArrowLeft, Sword } from "lucide-react";
+import { Heart, ArrowLeft, Sword, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import Navigation from "@/components/Navigation";
 
 interface Pokemon {
   id: number;
@@ -39,6 +40,7 @@ const PokemonDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [user, setUser] = useState(null);
+  const [videos, setVideos] = useState<any[]>([]);
 
   useEffect(() => {
     // Check auth state
@@ -51,6 +53,7 @@ const PokemonDetail = () => {
 
     if (id) {
       fetchPokemon(parseInt(id));
+      fetchYouTubeVideos(id);
     }
   }, [id]);
 
@@ -68,6 +71,46 @@ const PokemonDetail = () => {
       toast.error('Failed to load Pokémon data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchYouTubeVideos = async (pokemonId: string) => {
+    try {
+      // Using a mock search since YouTube API requires API key
+      // In a real implementation, you would use: 
+      // const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=pokemon+${pokemon.name}+battle&type=video&maxResults=3&key=${API_KEY}`);
+      
+      // For demo purposes, showing sample Pokemon-related videos
+      const sampleVideos = [
+        {
+          id: { videoId: "rg6CiPI6h2g" },
+          snippet: {
+            title: `${pokemon?.name || 'Pokemon'} Battle Compilation`,
+            description: `Amazing battles featuring ${pokemon?.name || 'Pokemon'}`,
+            thumbnails: { medium: { url: "https://i.ytimg.com/vi/rg6CiPI6h2g/mqdefault.jpg" } }
+          }
+        },
+        {
+          id: { videoId: "D0zYJ1RQ-fs" },
+          snippet: {
+            title: `${pokemon?.name || 'Pokemon'} Movie Scenes`,
+            description: `Best movie moments with ${pokemon?.name || 'Pokemon'}`,
+            thumbnails: { medium: { url: "https://i.ytimg.com/vi/D0zYJ1RQ-fs/mqdefault.jpg" } }
+          }
+        },
+        {
+          id: { videoId: "fCkeLBGSINs" },
+          snippet: {
+            title: `${pokemon?.name || 'Pokemon'} Evolution Guide`,
+            description: `Complete evolution guide for ${pokemon?.name || 'Pokemon'}`,
+            thumbnails: { medium: { url: "https://i.ytimg.com/vi/fCkeLBGSINs/mqdefault.jpg" } }
+          }
+        }
+      ];
+      
+      setVideos(sampleVideos);
+    } catch (error) {
+      console.error('Error fetching YouTube videos:', error);
     }
   };
 
@@ -198,9 +241,10 @@ const PokemonDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
-      {/* Header */}
-      <header className="bg-card/50 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
+      <Navigation />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => navigate('/pokemon')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -221,9 +265,6 @@ const PokemonDetail = () => {
             </div>
           </div>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Pokemon Image and Basic Info */}
           <Card>
@@ -326,6 +367,49 @@ const PokemonDetail = () => {
             </Card>
           </div>
         </div>
+
+        {/* YouTube Videos Section */}
+        {videos.length > 0 && (
+          <div className="mt-12">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Play className="h-5 w-5 mr-2 text-red-500" />
+                  Related Videos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {videos.map((video, index) => (
+                    <div key={index} className="group cursor-pointer">
+                      <div 
+                        className="relative aspect-video rounded-lg overflow-hidden mb-3 bg-muted hover:shadow-lg transition-shadow"
+                        onClick={() => window.open(`https://youtube.com/watch?v=${video.id.videoId}`, '_blank')}
+                      >
+                        <img
+                          src={video.snippet.thumbnails.medium.url}
+                          alt={video.snippet.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-red-600 text-white rounded-full p-3 group-hover:scale-110 transition-transform">
+                            <Play className="h-6 w-6 ml-1" />
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="font-medium text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+                        {video.snippet.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {video.snippet.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
     </div>
   );
