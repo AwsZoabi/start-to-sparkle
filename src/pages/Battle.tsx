@@ -8,6 +8,7 @@ import { Sword, Shield, Zap, Heart, Trophy, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import Navigation from "@/components/Navigation";
 
 interface Pokemon {
   id: number;
@@ -263,35 +264,7 @@ const Battle = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
-      {/* Header */}
-      <header className="bg-card/50 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/pokemon')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Pokédex
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground flex items-center">
-                  <Sword className="h-8 w-8 mr-2 text-primary" />
-                  Battle Arena
-                </h1>
-                <p className="text-muted-foreground">Choose your Pokémon and battle!</p>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => navigate('/leaderboard')}>
-                <Trophy className="h-4 w-4 mr-2" />
-                Leaderboard
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/profile')}>
-                Profile
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="container mx-auto px-4 py-8">
         {!battleState.playerPokemon ? (

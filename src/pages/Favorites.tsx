@@ -6,6 +6,7 @@ import { Heart, ArrowLeft, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import Navigation from "@/components/Navigation";
 
 interface Favorite {
   id: string;
@@ -177,34 +178,7 @@ const Favorites = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
-      {/* Header */}
-      <header className="bg-card/50 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/pokemon')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Pokédex
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">My Favorites</h1>
-                <p className="text-muted-foreground">{favorites.length} Pokémon saved</p>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              {favorites.length > 0 && (
-                <Button variant="outline" onClick={exportToCSV}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                </Button>
-              )}
-              <Button onClick={() => navigate('/battle')}>
-                Battle Arena
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <main className="container mx-auto px-4 py-8">
         {favorites.length === 0 ? (

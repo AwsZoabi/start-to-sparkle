@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Navigation from "@/components/Navigation";
 
 interface Pokemon {
   id: number;
@@ -101,11 +102,16 @@ const Pokemon = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
-      {/* Header */}
-      <header className="bg-card/50 backdrop-blur-sm border-b sticky top-0 z-10">
+      <Navigation />
+      
+      {/* Page Header */}
+      <header className="bg-card/50 backdrop-blur-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-foreground">Pokédex</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Pokédex</h1>
+              <p className="text-muted-foreground">Discover and explore Pokémon</p>
+            </div>
             <div className="flex space-x-2">
               <Button variant="outline" onClick={() => navigate("/favorites")}>
                 <Heart className="h-4 w-4 mr-2" />

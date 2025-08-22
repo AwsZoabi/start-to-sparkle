@@ -3,23 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Sword, Trophy, Heart, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Navigation from "@/components/Navigation";
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
+      <Navigation />
+      
       {/* Hero Section */}
       <header className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center space-x-2">
-            <Zap className="h-8 w-8 text-pokemon-electric" />
-            <h1 className="text-2xl font-bold text-foreground">PokéBattle Arena</h1>
-          </div>
-          <Button onClick={() => navigate("/auth")} variant="outline">
-            Sign In
-          </Button>
-        </div>
 
         <div className="text-center max-w-4xl mx-auto mb-16">
           <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
