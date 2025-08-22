@@ -14,7 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      battle_records: {
+        Row: {
+          battle_data: Json | null
+          created_at: string
+          id: string
+          player1_id: string
+          player1_pokemon: string
+          player2_id: string
+          player2_pokemon: string
+          winner_id: string | null
+        }
+        Insert: {
+          battle_data?: Json | null
+          created_at?: string
+          id?: string
+          player1_id: string
+          player1_pokemon: string
+          player2_id: string
+          player2_pokemon: string
+          winner_id?: string | null
+        }
+        Update: {
+          battle_data?: Json | null
+          created_at?: string
+          id?: string
+          player1_id?: string
+          player1_pokemon?: string
+          player2_id?: string
+          player2_pokemon?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          pokemon_id: number
+          pokemon_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pokemon_id: number
+          pokemon_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pokemon_id?: number
+          pokemon_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          battles_lost: number | null
+          battles_won: number | null
+          created_at: string
+          id: string
+          total_battles: number | null
+          trainer_level: number | null
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          battles_lost?: number | null
+          battles_won?: number | null
+          created_at?: string
+          id?: string
+          total_battles?: number | null
+          trainer_level?: number | null
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          battles_lost?: number | null
+          battles_won?: number | null
+          created_at?: string
+          id?: string
+          total_battles?: number | null
+          trainer_level?: number | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
