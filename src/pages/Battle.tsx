@@ -267,6 +267,76 @@ const Battle = () => {
       <Navigation />
 
       <main className="container mx-auto px-4 py-8">
+        {/* Action Buttons Section */}
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardHeader className="text-center pb-2">
+              <Sword className="h-8 w-8 mx-auto text-primary group-hover:scale-110 transition-transform" />
+              <CardTitle className="text-lg">Battle vs Bot</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground mb-3">Fight against AI opponent</p>
+              <Button 
+                className="w-full" 
+                onClick={() => {/* Current battle logic */}}
+                disabled={!!battleState.playerPokemon}
+              >
+                Start Bot Battle
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardHeader className="text-center pb-2">
+              <Zap className="h-8 w-8 mx-auto text-secondary group-hover:scale-110 transition-transform" />
+              <CardTitle className="text-lg">Random PvP</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground mb-3">Fight random player</p>
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={() => toast.info("PvP battles coming soon!")}
+              >
+                Find Player
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardHeader className="text-center pb-2">
+              <Shield className="h-8 w-8 mx-auto text-accent group-hover:scale-110 transition-transform" />
+              <CardTitle className="text-lg">Battle History</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground mb-3">View past battles</p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/profile')}
+              >
+                View History
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <CardHeader className="text-center pb-2">
+              <Trophy className="h-8 w-8 mx-auto text-warning group-hover:scale-110 transition-transform" />
+              <CardTitle className="text-lg">Leaderboard</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground mb-3">Player rankings</p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/leaderboard')}
+              >
+                View Rankings
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
         {!battleState.playerPokemon ? (
           // Pokemon Selection
           <div className="max-w-2xl mx-auto">
