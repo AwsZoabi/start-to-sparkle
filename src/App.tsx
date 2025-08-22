@@ -8,6 +8,8 @@ import Auth from "./pages/Auth";
 import Pokemon from "./pages/Pokemon";
 import PokemonDetail from "./pages/PokemonDetail";
 import Favorites from "./pages/Favorites";
+import Battle from "./pages/Battle";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/pokemon" element={<Pokemon />} />
           <Route path="/pokemon/:id" element={<PokemonDetail />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/battle" element={<Battle />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
