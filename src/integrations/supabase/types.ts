@@ -79,6 +79,7 @@ export type Database = {
           created_at: string
           id: string
           total_battles: number | null
+          total_score: number | null
           trainer_level: number | null
           updated_at: string
           user_id: string
@@ -91,6 +92,7 @@ export type Database = {
           created_at?: string
           id?: string
           total_battles?: number | null
+          total_score?: number | null
           trainer_level?: number | null
           updated_at?: string
           user_id: string
@@ -103,6 +105,7 @@ export type Database = {
           created_at?: string
           id?: string
           total_battles?: number | null
+          total_score?: number | null
           trainer_level?: number | null
           updated_at?: string
           user_id?: string

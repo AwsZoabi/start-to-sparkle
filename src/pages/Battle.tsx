@@ -248,20 +248,28 @@ const Battle = () => {
         }
       });
 
-      // Update profile stats
+      // Update profile stats with new scoring system
       const { data: profile } = await supabase
         .from('profiles')
-        .select('battles_won, battles_lost, total_battles')
+        .select('battles_won, battles_lost, total_battles, total_score')
         .eq('user_id', user.id)
         .single();
 
       if (profile) {
+        const newWins = profile.battles_won + (won ? 1 : 0);
+        const newLosses = profile.battles_lost + (won ? 0 : 1);
+        const newTotalBattles = profile.total_battles + 1;
+        // New scoring system: Win = 3 points, Draw = 1 point, Loss = 0 points
+        const pointsEarned = won ? 3 : 0; // No draws in bot battles yet
+        const newTotalScore = profile.total_score + pointsEarned;
+
         await supabase
           .from('profiles')
           .update({
-            battles_won: profile.battles_won + (won ? 1 : 0),
-            battles_lost: profile.battles_lost + (won ? 0 : 1),
-            total_battles: profile.total_battles + 1
+            battles_won: newWins,
+            battles_lost: newLosses,
+            total_battles: newTotalBattles,
+            total_score: newTotalScore
           })
           .eq('user_id', user.id);
       }
