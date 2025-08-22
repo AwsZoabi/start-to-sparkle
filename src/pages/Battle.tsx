@@ -35,8 +35,11 @@ const Battle = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [availablePokemon, setAvailablePokemon] = useState<Pokemon[]>([]);
+  const [userFavorites, setUserFavorites] = useState<Pokemon[]>([]);
   const [selectedPokemonId, setSelectedPokemonId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [showCountdown, setShowCountdown] = useState(false);
   const [battleState, setBattleState] = useState<BattleState>({
     playerPokemon: null,
     opponentPokemon: null,
@@ -53,6 +56,7 @@ const Battle = () => {
   useEffect(() => {
     checkAuth();
     fetchPokemon();
+    fetchUserFavorites();
   }, []);
 
   const checkAuth = async () => {
@@ -82,6 +86,30 @@ const Battle = () => {
     }
   };
 
+  const fetchUserFavorites = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: favoritesData } = await supabase
+        .from('favorites')
+        .select('pokemon_id, pokemon_name')
+        .eq('user_id', user.id);
+
+      if (favoritesData && favoritesData.length > 0) {
+        const favoritesPokemon = await Promise.all(
+          favoritesData.map(async (fav) => {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${fav.pokemon_id}`);
+            return await response.json();
+          })
+        );
+        setUserFavorites(favoritesPokemon);
+      }
+    } catch (error) {
+      console.error('Error fetching user favorites:', error);
+    }
+  };
+
   const startBattle = async () => {
     if (!selectedPokemonId) {
       toast.error('Please select a Pokémon first!');
@@ -89,7 +117,27 @@ const Battle = () => {
     }
 
     setLoading(true);
-    const playerPokemon = availablePokemon.find(p => p.id.toString() === selectedPokemonId);
+    
+    // Show countdown
+    setShowCountdown(true);
+    setCountdown(3);
+    
+    const countdownInterval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          setShowCountdown(false);
+          executeBattle();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const executeBattle = () => {
+    const pokemonList = userFavorites.length > 0 ? userFavorites : availablePokemon;
+    const playerPokemon = pokemonList.find(p => p.id.toString() === selectedPokemonId);
     const randomOpponent = availablePokemon[Math.floor(Math.random() * availablePokemon.length)];
 
     if (!playerPokemon) return;
@@ -345,30 +393,72 @@ const Battle = () => {
                 <CardTitle className="text-center">Choose Your Fighter</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <Select value={selectedPokemonId} onValueChange={setSelectedPokemonId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a Pokémon" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availablePokemon.map((pokemon) => (
-                      <SelectItem key={pokemon.id} value={pokemon.id.toString()}>
-                        <div className="flex items-center space-x-2">
+                {userFavorites.length > 0 ? (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4 text-center">Choose from Your Favorites</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {userFavorites.map((pokemon) => (
+                        <div
+                          key={pokemon.id}
+                          className={`border-2 rounded-lg p-3 cursor-pointer transition-all hover:shadow-lg ${
+                            selectedPokemonId === pokemon.id.toString()
+                              ? 'border-primary bg-primary/10'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          onClick={() => setSelectedPokemonId(pokemon.id.toString())}
+                        >
                           <img 
-                            src={pokemon.sprites.front_default} 
+                            src={pokemon.sprites.front_default}
                             alt={pokemon.name}
-                            className="w-8 h-8"
+                            className="w-16 h-16 mx-auto mb-2"
                           />
-                          <span className="capitalize">{pokemon.name}</span>
+                          <p className="text-sm font-medium capitalize text-center">{pokemon.name}</p>
+                          <div className="flex justify-center gap-1 mt-2">
+                            {pokemon.types.map((t) => (
+                              <Badge 
+                                key={t.type.name} 
+                                className={`${getTypeColor(t.type.name)} text-white text-xs`}
+                              >
+                                {t.type.name}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-center text-muted-foreground mb-4">
+                      No favorites found. Choose from available Pokémon:
+                    </p>
+                    <Select value={selectedPokemonId} onValueChange={setSelectedPokemonId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a Pokémon" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availablePokemon.map((pokemon) => (
+                          <SelectItem key={pokemon.id} value={pokemon.id.toString()}>
+                            <div className="flex items-center space-x-2">
+                              <img 
+                                src={pokemon.sprites.front_default} 
+                                alt={pokemon.name}
+                                className="w-8 h-8"
+                              />
+                              <span className="capitalize">{pokemon.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {selectedPokemonId && (
                   <div className="text-center">
                     {(() => {
-                      const selectedPokemon = availablePokemon.find(p => p.id.toString() === selectedPokemonId);
+                      const pokemonList = userFavorites.length > 0 ? userFavorites : availablePokemon;
+                      const selectedPokemon = pokemonList.find(p => p.id.toString() === selectedPokemonId);
                       return selectedPokemon ? (
                         <div>
                           <img 
@@ -393,13 +483,24 @@ const Battle = () => {
                   </div>
                 )}
 
-                <Button 
-                  onClick={startBattle} 
-                  disabled={!selectedPokemonId || loading}
-                  className="w-full"
-                >
-                  {loading ? 'Finding Opponent...' : 'Start Battle!'}
-                </Button>
+                {showCountdown && (
+                  <div className="text-center py-8">
+                    <div className="text-6xl font-bold text-primary animate-pulse">
+                      {countdown}
+                    </div>
+                    <p className="text-lg text-muted-foreground mt-2">Battle starting...</p>
+                  </div>
+                )}
+
+                {!showCountdown && (
+                  <Button 
+                    onClick={startBattle} 
+                    disabled={!selectedPokemonId || loading}
+                    className="w-full"
+                  >
+                    {loading ? 'Finding Opponent...' : 'Start Battle!'}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -407,9 +508,11 @@ const Battle = () => {
           // Battle Interface
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Player Pokemon */}
-            <Card>
+            <Card className={`${battleState.gameOver && battleState.winner === 'player' ? 'ring-2 ring-green-500 bg-green-50' : ''}`}>
               <CardHeader>
-                <CardTitle className="text-center text-blue-600">Your Pokémon</CardTitle>
+                <CardTitle className={`text-center ${battleState.gameOver && battleState.winner === 'player' ? 'text-green-600' : 'text-blue-600'}`}>
+                  Your Pokémon {battleState.gameOver && battleState.winner === 'player' ? '🏆' : ''}
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <img 
@@ -496,9 +599,11 @@ const Battle = () => {
             </Card>
 
             {/* Opponent Pokemon */}
-            <Card>
+            <Card className={`${battleState.gameOver && battleState.winner === 'opponent' ? 'ring-2 ring-red-500 bg-red-50' : ''}`}>
               <CardHeader>
-                <CardTitle className="text-center text-red-600">Opponent</CardTitle>
+                <CardTitle className={`text-center ${battleState.gameOver && battleState.winner === 'opponent' ? 'text-red-600' : 'text-red-600'}`}>
+                  Opponent {battleState.gameOver && battleState.winner === 'opponent' ? '🏆' : ''}
+                </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <img 
