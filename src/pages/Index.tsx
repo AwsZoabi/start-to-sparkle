@@ -121,6 +121,24 @@ const Index = () => {
           </Button>
         </div>
       </section>
+
+      {/* Credits Section */}
+      <footer className="py-8 border-t border-border/40">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground mb-2">Developed by</p>
+          <div className="flex justify-center items-center gap-8 text-sm">
+            <div>
+              <span className="font-medium">Aws Zoabi</span>
+              <span className="text-muted-foreground ml-2">ID: 214537383</span>
+            </div>
+            <div className="h-4 w-px bg-border"></div>
+            <div>
+              <span className="font-medium">Tamer Khatib</span>
+              <span className="text-muted-foreground ml-2">ID: 314742958</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
