@@ -8,33 +8,40 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 215 20% 95%;
+    --foreground: 228 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 228 84% 4.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 228 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 215 90% 55%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 45 85% 58%;
+    --secondary-foreground: 228 84% 4.9%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 215 20% 85%;
+    --muted-foreground: 215 16% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 290 70% 65%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 215 31.8% 85%;
+    --input: 215 31.8% 91.4%;
+    --ring: 215 90% 55%;
+
+    /* Pokémon theme colors */
+    --pokemon-electric: 45 100% 50%;
+    --pokemon-fire: 15 85% 55%;
+    --pokemon-water: 215 90% 55%;
+    --pokemon-grass: 120 60% 45%;
+    --pokemon-psychic: 300 70% 65%;
 
     --radius: 0.5rem;
 
@@ -56,33 +63,40 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 228 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 228 70% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 228 70% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 215 90% 60%;
+    --primary-foreground: 228 84% 4.9%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 45 85% 50%;
+    --secondary-foreground: 228 84% 4.9%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 228 32.6% 15%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 290 70% 60%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 228 32.6% 15%;
+    --input: 228 32.6% 15%;
+    --ring: 215 90% 60%;
+
+    /* Pokémon theme colors */
+    --pokemon-electric: 45 100% 60%;
+    --pokemon-fire: 15 85% 60%;
+    --pokemon-water: 215 90% 60%;
+    --pokemon-grass: 120 60% 50%;
+    --pokemon-psychic: 300 70% 70%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
