@@ -47,6 +47,69 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_rooms: {
+        Row: {
+          battle_log: Json | null
+          created_at: string
+          current_turn: string | null
+          id: string
+          player1_hp: number | null
+          player1_id: string
+          player1_max_hp: number | null
+          player1_pokemon_id: number | null
+          player1_pokemon_name: string | null
+          player2_hp: number | null
+          player2_id: string | null
+          player2_max_hp: number | null
+          player2_pokemon_id: number | null
+          player2_pokemon_name: string | null
+          room_code: string
+          status: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          battle_log?: Json | null
+          created_at?: string
+          current_turn?: string | null
+          id?: string
+          player1_hp?: number | null
+          player1_id: string
+          player1_max_hp?: number | null
+          player1_pokemon_id?: number | null
+          player1_pokemon_name?: string | null
+          player2_hp?: number | null
+          player2_id?: string | null
+          player2_max_hp?: number | null
+          player2_pokemon_id?: number | null
+          player2_pokemon_name?: string | null
+          room_code: string
+          status?: string | null
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          battle_log?: Json | null
+          created_at?: string
+          current_turn?: string | null
+          id?: string
+          player1_hp?: number | null
+          player1_id?: string
+          player1_max_hp?: number | null
+          player1_pokemon_id?: number | null
+          player1_pokemon_name?: string | null
+          player2_hp?: number | null
+          player2_id?: string | null
+          player2_max_hp?: number | null
+          player2_pokemon_id?: number | null
+          player2_pokemon_name?: string | null
+          room_code?: string
+          status?: string | null
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string

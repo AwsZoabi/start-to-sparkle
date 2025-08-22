@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sword, Shield, Zap, Heart, Trophy, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sword, Shield, Zap, Heart, Trophy, ArrowLeft, Copy, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,6 +33,19 @@ interface BattleState {
   turn: 'player' | 'opponent';
 }
 
+interface BattleRoom {
+  id: string;
+  room_code: string;
+  player1_id: string;
+  player2_id: string | null;
+  status: string;
+  player1_pokemon_name: string | null;
+  player2_pokemon_name: string | null;
+  player1_pokemon_id: number | null;
+  player2_pokemon_id: number | null;
+  current_turn: string | null;
+}
+
 const Battle = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -40,6 +55,14 @@ const Battle = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [showCountdown, setShowCountdown] = useState(false);
+  
+  // PvP State
+  const [showPvPModal, setShowPvPModal] = useState(false);
+  const [pvpMode, setPvpMode] = useState<'create' | 'join' | null>(null);
+  const [roomCode, setRoomCode] = useState('');
+  const [currentRoom, setCurrentRoom] = useState<BattleRoom | null>(null);
+  const [channel, setChannel] = useState(null);
+  
   const [battleState, setBattleState] = useState<BattleState>({
     playerPokemon: null,
     opponentPokemon: null,
@@ -58,6 +81,15 @@ const Battle = () => {
     fetchPokemon();
     fetchUserFavorites();
   }, []);
+
+  // Cleanup effect for channels
+  useEffect(() => {
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [channel]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -318,6 +350,177 @@ const Battle = () => {
     return colors[type] || "bg-gray-400";
   };
 
+  // PvP Functions
+  const generateRoomCode = () => {
+    return Math.random().toString(36).substr(2, 6).toUpperCase();
+  };
+
+  const createRoom = async () => {
+    if (!user) return;
+    
+    const code = generateRoomCode();
+    try {
+      const { data, error } = await supabase
+        .from('battle_rooms')
+        .insert({
+          room_code: code,
+          player1_id: user.id,
+          status: 'waiting'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setCurrentRoom(data);
+      subscribeToRoom(data.id);
+      setRoomCode(code);
+      setPvpMode('create');
+      setShowPvPModal(true);
+      toast.success(`Room created! Code: ${code}`);
+    } catch (error) {
+      console.error('Error creating room:', error);
+      toast.error('Failed to create room');
+    }
+  };
+
+  const joinRoom = async (code: string) => {
+    if (!user || !code.trim()) return;
+    
+    try {
+      const { data: rooms, error } = await supabase
+        .from('battle_rooms')
+        .select('*')
+        .eq('room_code', code.toUpperCase())
+        .eq('status', 'waiting')
+        .single();
+
+      if (error) throw error;
+      
+      const { error: updateError } = await supabase
+        .from('battle_rooms')
+        .update({
+          player2_id: user.id,
+          status: 'selecting'
+        })
+        .eq('id', rooms.id);
+
+      if (updateError) throw updateError;
+
+      setCurrentRoom({ ...rooms, player2_id: user.id, status: 'selecting' });
+      subscribeToRoom(rooms.id);
+      setPvpMode('join');
+      setShowPvPModal(true);
+      toast.success('Joined room successfully!');
+    } catch (error) {
+      console.error('Error joining room:', error);
+      toast.error('Room not found or already full');
+    }
+  };
+
+  const subscribeToRoom = (roomId: string) => {
+    const newChannel = supabase
+      .channel(`battle_room_${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'battle_rooms',
+          filter: `id=eq.${roomId}`
+        },
+        (payload) => {
+          console.log('Room update:', payload);
+          if (payload.new) {
+            const roomData = payload.new as BattleRoom;
+            setCurrentRoom(roomData);
+            
+            if (roomData.status === 'battling' && roomData.player1_pokemon_name && roomData.player2_pokemon_name) {
+              startPvPBattle(roomData);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    setChannel(newChannel);
+  };
+
+  const selectPokemonForPvP = async (pokemonId: string) => {
+    if (!currentRoom || !user) return;
+    
+    const pokemon = [...userFavorites, ...availablePokemon].find(p => p.id.toString() === pokemonId);
+    if (!pokemon) return;
+
+    const isPlayer1 = currentRoom.player1_id === user.id;
+    const updateData = isPlayer1 
+      ? { player1_pokemon_name: pokemon.name, player1_pokemon_id: pokemon.id }
+      : { player2_pokemon_name: pokemon.name, player2_pokemon_id: pokemon.id };
+
+    try {
+      await supabase
+        .from('battle_rooms')
+        .update(updateData)
+        .eq('id', currentRoom.id);
+
+      // Check if both players have selected their Pokemon
+      const updatedRoom = { ...currentRoom, ...updateData };
+      if (updatedRoom.player1_pokemon_name && updatedRoom.player2_pokemon_name) {
+        await supabase
+          .from('battle_rooms')
+          .update({ status: 'battling', current_turn: updatedRoom.player1_id })
+          .eq('id', currentRoom.id);
+      }
+    } catch (error) {
+      console.error('Error selecting Pokemon:', error);
+      toast.error('Failed to select Pokemon');
+    }
+  };
+
+  const startPvPBattle = async (room: BattleRoom) => {
+    if (!room.player1_pokemon_name || !room.player2_pokemon_name) return;
+    
+    try {
+      const [player1Pokemon, player2Pokemon] = await Promise.all([
+        fetch(`https://pokeapi.co/api/v2/pokemon/${room.player1_pokemon_id}`).then(r => r.json()),
+        fetch(`https://pokeapi.co/api/v2/pokemon/${room.player2_pokemon_id}`).then(r => r.json())
+      ]);
+
+      const isPlayer1 = user?.id === room.player1_id;
+      const playerPokemon = isPlayer1 ? player1Pokemon : player2Pokemon;
+      const opponentPokemon = isPlayer1 ? player2Pokemon : player1Pokemon;
+      
+      const playerMaxHP = playerPokemon.stats.find(s => s.stat.name === 'hp')?.base_stat || 100;
+      const opponentMaxHP = opponentPokemon.stats.find(s => s.stat.name === 'hp')?.base_stat || 100;
+
+      setBattleState({
+        playerPokemon,
+        opponentPokemon,
+        playerHP: playerMaxHP,
+        opponentHP: opponentMaxHP,
+        playerMaxHP,
+        opponentMaxHP,
+        battleLog: [`${playerPokemon.name} vs ${opponentPokemon.name} - PvP Battle begins!`],
+        gameOver: false,
+        winner: null,
+        turn: room.current_turn === user?.id ? 'player' : 'opponent'
+      });
+
+      setShowPvPModal(false);
+      toast.success('PvP Battle started!');
+    } catch (error) {
+      console.error('Error starting PvP battle:', error);
+      toast.error('Failed to start battle');
+    }
+  };
+
+  const copyRoomCode = () => {
+    if (roomCode) {
+      navigator.clipboard.writeText(roomCode);
+      toast.success('Room code copied to clipboard!');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10">
       <Navigation />
@@ -344,17 +547,29 @@ const Battle = () => {
 
           <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
             <CardHeader className="text-center pb-2">
-              <Zap className="h-8 w-8 mx-auto text-secondary group-hover:scale-110 transition-transform" />
-              <CardTitle className="text-lg">Random PvP</CardTitle>
+              <Users className="h-8 w-8 mx-auto text-secondary group-hover:scale-110 transition-transform" />
+              <CardTitle className="text-lg">Player vs Player</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <p className="text-sm text-muted-foreground mb-3">Fight random player</p>
+            <CardContent className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground mb-3">Battle real players</p>
               <Button 
                 variant="secondary" 
-                className="w-full"
-                onClick={() => toast.info("PvP battles coming soon!")}
+                className="w-full mb-2"
+                onClick={createRoom}
+                disabled={!!battleState.playerPokemon}
               >
-                Find Player
+                Create Room
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setPvpMode('join');
+                  setShowPvPModal(true);
+                }}
+                disabled={!!battleState.playerPokemon}
+              >
+                Join Room
               </Button>
             </CardContent>
           </Card>
@@ -647,6 +862,93 @@ const Battle = () => {
           </div>
         )}
       </main>
+
+      {/* PvP Modal */}
+      <Dialog open={showPvPModal} onOpenChange={setShowPvPModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {pvpMode === 'create' ? 'Room Created!' : 'Join Battle Room'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {pvpMode === 'create' && currentRoom ? (
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-primary/10 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-2">Share this code with your opponent:</p>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      value={roomCode} 
+                      readOnly 
+                      className="text-center font-mono text-lg"
+                    />
+                    <Button size="sm" onClick={copyRoomCode}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {currentRoom.status === 'waiting' && (
+                  <p className="text-sm text-muted-foreground">
+                    Waiting for opponent to join...
+                  </p>
+                )}
+                
+                {currentRoom.status === 'selecting' && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Select your Pokémon:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(userFavorites.length > 0 ? userFavorites : availablePokemon).slice(0, 6).map((pokemon) => (
+                        <div
+                          key={pokemon.id}
+                          className="border rounded-lg p-2 cursor-pointer hover:bg-primary/10 transition-colors"
+                          onClick={() => selectPokemonForPvP(pokemon.id.toString())}
+                        >
+                          <img 
+                            src={pokemon.sprites.front_default}
+                            alt={pokemon.name}
+                            className="w-12 h-12 mx-auto"
+                          />
+                          <p className="text-xs text-center capitalize">{pokemon.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : pvpMode === 'join' ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Enter Room Code:</label>
+                  <Input 
+                    value={roomCode}
+                    onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                    placeholder="Enter 6-character code"
+                    className="text-center font-mono"
+                    maxLength={6}
+                  />
+                </div>
+                <Button 
+                  onClick={() => joinRoom(roomCode)}
+                  disabled={roomCode.length !== 6}
+                  className="w-full"
+                >
+                  Join Room
+                </Button>
+              </div>
+            ) : null}
+            
+            {currentRoom?.status === 'selecting' && (
+              <div className="text-xs text-muted-foreground text-center">
+                {currentRoom.player1_pokemon_name && currentRoom.player2_pokemon_name 
+                  ? 'Starting battle...' 
+                  : `Waiting for ${currentRoom.player1_pokemon_name ? 'opponent' : 'you'} to select Pokémon...`}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
