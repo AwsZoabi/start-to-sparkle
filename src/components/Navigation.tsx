@@ -100,7 +100,10 @@ const Navigation = ({ showAuth = true }: NavigationProps) => {
               <Button
                 variant={isActivePage("/favorites") ? "default" : "ghost"}
                 size="sm"
-                onClick={() => navigate("/favorites")}
+                onClick={() => {
+                  console.log("Favorites button clicked, navigating to /favorites");
+                  navigate("/favorites");
+                }}
               >
                 <Heart className="h-4 w-4 mr-2" />
                 Favorites
