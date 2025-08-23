@@ -35,11 +35,8 @@ const Favorites = () => {
   }, []);
 
   const checkAuth = async () => {
-    console.log('Checking authentication...');
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('User:', user);
     if (!user) {
-      console.log('No user found, redirecting to auth');
       navigate('/auth');
       return;
     }
