@@ -181,6 +181,29 @@ const Favorites = () => {
       <Navigation />
 
       <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">My Favorites</h1>
+            <p className="text-muted-foreground">
+              {favorites.length} Pokémon in your collection
+            </p>
+          </div>
+          
+          {favorites.length > 0 && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToCSV}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
+          )}
+        </div>
+
         {favorites.length === 0 ? (
           <div className="text-center py-16">
             <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
